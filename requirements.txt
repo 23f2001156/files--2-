@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+openai>=1.0.0
+python-dotenv
+python-multipart
+Pillow
+requests
