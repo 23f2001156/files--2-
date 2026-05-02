@@ -34,95 +34,60 @@
     overflow: hidden;
   }
 
+  /* Scrollbar override for pro feel */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
   /* ── Layout ────────────────────────────────────────────────── */
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
+  .app-container { display: flex; flex-direction: column; height: 100vh; }
   .top-nav {
-    height: 56px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--hairline);
-    display: flex;
-    align-items: center;
-    padding: 0 var(--spacing-sm);
-    text-transform: uppercase;
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.65px;
+    height: 56px; background: var(--panel); border-bottom: 1px solid var(--hairline);
+    display: flex; align-items: center; padding: 0 var(--spacing-sm);
+    text-transform: uppercase; font-weight: 600; font-size: 12px; letter-spacing: 0.65px; 
     z-index: 10;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   }
-  .brand-mark {
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--primary);
-    margin-right: auto;
-  }
-  .workspace {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+  .brand-mark { font-weight: 700; letter-spacing: 2px; color: var(--primary); margin-right: auto; }
+  .workspace { display: flex; flex: 1; overflow: hidden; }
 
   /* ── Sidebar (Left) ──────────────────────────────────────── */
   .sidebar {
-    width: 380px;
-    background: var(--panel);
-    border-right: 1px solid var(--hairline);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
+    width: 440px; 
+    background: var(--panel); border-right: 1px solid var(--hairline);
+    display: flex; flex-direction: column; overflow-y: auto; 
     z-index: 5;
+    box-shadow: 8px 0 32px rgba(0,0,0,0.6);
   }
-  .sidebar-header {
-    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-xs);
-  }
-  .sidebar-title {
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: 0.2px;
-  }
-  .step-container {
-    padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-sm);
-    border-bottom: 1px solid var(--hairline);
-    transition: opacity 0.3s;
-  }
+  .sidebar-header { padding: var(--spacing-md) var(--spacing-sm) var(--spacing-xs); }
+  .sidebar-title { font-size: 16px; font-weight: 500; letter-spacing: 0.2px; }
+  
+  .step-container { padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-sm); border-bottom: 1px solid var(--hairline); transition: opacity 0.3s; }
   .step-container.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(100%); }
-  .step-header {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: var(--spacing-xxs);
-  }
+  .step-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: var(--spacing-xxs); }
   .step-num { color: var(--primary); font-size: 11px; font-weight: 700; letter-spacing: 1px; }
   .step-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--body); letter-spacing: 0.5px;}
 
   /* Drop Zones */
   .drop-zone {
-    border: 1px dashed var(--muted);
-    background: var(--canvas);
-    padding: var(--spacing-sm) var(--spacing-xs);
-    text-align: center;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s;
-    margin-top: 12px;
+    border: 1px dashed var(--muted); background: var(--canvas); padding: var(--spacing-sm) var(--spacing-xs);
+    text-align: center; cursor: pointer; position: relative; transition: all 0.2s; margin-top: 12px;
+    box-shadow: inset 0 4px 12px rgba(0,0,0,0.2);
   }
-  .drop-zone:hover { border-color: var(--ink); background: var(--panel-elevated); }
+  .drop-zone:hover { 
+    border-color: var(--ink); background: var(--panel-elevated); 
+    box-shadow: inset 0 4px 16px rgba(0,0,0,0.4); 
+  }
   .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .drop-text { font-size: 12px; color: var(--body); }
   .drop-text strong { display: block; color: var(--ink); margin-bottom: 4px; }
   
   /* Uploaded State inside sidebar */
-  .mini-preview {
-    display: none;
-    margin-top: 12px;
-    background: var(--canvas);
-    padding: 8px;
-    border: 1px solid var(--hairline);
-    align-items: center;
-    gap: 12px;
+  .mini-preview { 
+    display: none; margin-top: 12px; background: var(--canvas); padding: 8px; 
+    border: 1px solid var(--hairline); align-items: center; gap: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .mini-preview.visible { display: flex; }
   .mini-preview img { width: 48px; height: 48px; object-fit: cover; }
@@ -132,57 +97,77 @@
 
   /* Directive */
   .prompt-input {
-    width: 100%; height: 100px; background: var(--canvas); border: 1px solid var(--hairline);
-    color: var(--ink); padding: 12px; font-family: inherit; font-size: 13px; resize: none; margin-top: 12px;
-    outline: none;
+    width: 100%; height: 120px; background: var(--canvas); border: 1px solid var(--hairline);
+    color: var(--ink); padding: 12px; font-family: inherit; font-size: 13px; resize: none; margin-top: 12px; outline: none;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    transition: background 0.2s, box-shadow 0.2s;
   }
-  .prompt-input:focus { border-color: var(--body); }
+  .prompt-input:focus { border-color: var(--body); background: #0a0a0a; }
 
   /* Button Sidebar */
   .sidebar-footer { padding: var(--spacing-sm); margin-top: auto; }
   .btn-generate {
     width: 100%; background: var(--primary); color: #fff; border: none; padding: 16px;
     font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-    cursor: pointer; transition: 0.2s;
+    cursor: pointer; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(218, 41, 28, 0.25);
   }
-  .btn-generate:hover { background: var(--primary-active); }
+  .btn-generate:hover { 
+    background: var(--primary-active); 
+    box-shadow: 0 10px 30px rgba(218, 41, 28, 0.5);
+    transform: translateY(-1px);
+  }
 
   /* ── Canvas (Right) ────────────────────────────────────────── */
-  .canvas-area {
-    flex: 1;
-    background: var(--canvas);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-md);
-  }
-  .empty-state {
-    text-align: center; color: var(--muted);
-  }
-  .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .canvas-area { flex: 1; background: var(--canvas); position: relative; display: flex; align-items: center; justify-content: center; padding: var(--spacing-md); overflow: hidden; }
+  .empty-state { text-align: center; color: var(--muted); }
+  .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
   
   .viewport { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; position: relative; }
   .viewport.visible { display: flex; }
   
-  .viewport img.main-img {
-    max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  .viewport img.main-img { 
+    max-width: 100%; max-height: calc(100vh - 120px); object-fit: contain; 
+    box-shadow: 0 24px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.02); 
   }
   
+  /* UX feature: Picture-in-picture float for asset reference */
+  .floating-asset {
+    position: absolute; bottom: var(--spacing-md); right: var(--spacing-md);
+    width: 220px; background: var(--panel-elevated); border: 1px solid var(--hairline);
+    padding: 12px; display: none; flex-direction: column; z-index: 15;
+    box-shadow: 0 24px 50px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .floating-asset.visible { display: flex; }
+  .floating-asset img { width: 100%; height: auto; object-fit: contain; max-height: 180px; background: var(--canvas); padding: 4px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.4); }
+  .floating-asset-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--body); margin-bottom: 8px; letter-spacing: 1px; }
+
   /* Result specific */
   .result-view { display: none; width: 100%; height: 100%; flex-direction: column; }
   .result-view.visible { display: flex; }
-  .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm); }
-  .result-title { font-size: 18px; font-weight: 500; }
+  .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm); flex-shrink: 0; }
+  .result-title { font-size: 18px; font-weight: 500; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
   .result-actions { display: flex; gap: 12px; }
-  .btn-ghost { background: transparent; border: 1px solid var(--hairline); color: var(--ink); padding: 8px 16px; font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; text-decoration: none;}
-  .btn-ghost:hover { border-color: var(--body); }
+  .btn-ghost { 
+    background: var(--panel); border: 1px solid var(--hairline); color: var(--ink); padding: 8px 16px; 
+    font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--body); box-shadow: 0 6px 16px rgba(0,0,0,0.5); transform: translateY(-1px); }
   
-  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%; min-height: 0; }
-  .image-pane { display: flex; flex-direction: column; height: 100%; }
-  .pane-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--body); margin-bottom: 8px; text-transform: uppercase; }
-  .pane-img-wrap { flex: 1; background: var(--panel); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--hairline); }
-  .pane-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; height: 100%; min-height: 0; }
+  .image-pane { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  .pane-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--body); margin-bottom: 8px; text-transform: uppercase; flex-shrink: 0;}
+  
+  .pane-img-wrap { 
+    flex: 1; background: var(--panel); display: flex; align-items: center; justify-content: center; 
+    overflow: hidden; border: 1px solid var(--hairline); min-height: 0;
+    box-shadow: inset 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .pane-img-wrap img { 
+    max-width: 100%; max-height: 100%; object-fit: contain; 
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4)); 
+  }
 
   /* Loading Override */
   .overlay-loader {
@@ -190,10 +175,10 @@
     display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: var(--primary);
   }
   .overlay-loader.visible { display: flex; }
-  .spinner { border: 2px solid var(--hairline); border-top-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 16px; }
+  .spinner { border: 2px solid var(--hairline); border-top-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 16px; box-shadow: 0 0 20px rgba(218, 41, 28, 0.2); }
   @keyframes spin { to { transform: rotate(360deg); } }
   
-  .error-toast { position: fixed; bottom: 24px; right: 24px; background: #f13a2c; color: white; padding: 16px 24px; font-size: 13px; font-weight: 500; z-index: 100; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+  .error-toast { position: fixed; bottom: 24px; right: 24px; background: #f13a2c; color: white; padding: 16px 24px; font-size: 13px; font-weight: 500; z-index: 100; transform: translateY(100px); opacity: 0; transition: all 0.3s; box-shadow: 0 10px 30px rgba(241, 58, 44, 0.4); }
   .error-toast.visible { transform: translateY(0); opacity: 1; }
 
 </style>
@@ -273,6 +258,12 @@
       <!-- Viewport (Shows original while prepping) -->
       <div class="viewport" id="viewport">
         <img id="canvasMainImg" class="main-img" src="" alt="Active Scene" />
+        
+        <!-- Feature: Floating Asset PIP -->
+        <div class="floating-asset" id="floatingAsset">
+          <div class="floating-asset-label">Active Reference</div>
+          <img id="canvasAssetImg" src="" alt="Reference Subject" />
+        </div>
       </div>
 
       <!-- Result Split View -->
@@ -310,7 +301,8 @@
 
 <script>
 const $ = id => document.getElementById(id);
-let baseBlob = null, baseURL = null, objBlob = null;
+let baseBlob = null, baseURL = null;
+let objBlob = null, objURL = null; // Store obj URL for picture-in-picture
 
 function showToast(msg) {
   $('errorToast').textContent = msg;
@@ -328,8 +320,9 @@ function dataUrlToBlob(url) {
 }
 
 function updateCanvasState() {
-  if ($('resultView').classList.contains('visible')) return; // handled separately
+  if ($('resultView').classList.contains('visible')) return;
   
+  // Show base environment
   if (baseURL) {
     $('emptyState').style.display = 'none';
     $('canvasMainImg').src = baseURL;
@@ -337,6 +330,14 @@ function updateCanvasState() {
   } else {
     $('emptyState').style.display = 'block';
     $('viewport').classList.remove('visible');
+  }
+
+  // Feature: Conditional Picture-in-Picture
+  if (objURL && baseURL) {
+    $('canvasAssetImg').src = objURL;
+    $('floatingAsset').classList.add('visible');
+  } else {
+    $('floatingAsset').classList.remove('visible');
   }
 }
 
@@ -360,7 +361,7 @@ function setEnvironment(file, url) {
 
 // Asset Logic
 function setAsset(file, url) {
-  objBlob = file;
+  objBlob = file; objURL = url;
   if(objBlob) {
     $('objZone').style.display = 'none';
     $('objThumb').src = url;
@@ -368,9 +369,9 @@ function setAsset(file, url) {
     $('step3').classList.remove('disabled');
   } else {
     $('objZone').style.display = 'block';
-    $('objMini').classList.remove('visible');
-    $('step3').classList.add('disabled');
+    $('objMini').classList.remove('visible');    $('step3').classList.add('disabled');
   }
+  updateCanvasState();
 }
 
 function handleRead(file, cb) {
@@ -394,6 +395,7 @@ $('refineBtn').addEventListener('click', () => {
   setAsset(null, null);
   $('promptInput').value = '';
   $('resultView').classList.remove('visible');
+  updateCanvasState();
 });
 
 // Generate
