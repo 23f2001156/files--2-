@@ -5,151 +5,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AI Room Visualizer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  /* ── Reset & Base ─────────────────────────────────────────── */
+  /* ── Tokens & Base ─────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:          #0c0c17;
-    --surface:     #13131f;
-    --surface2:    #1a1a2e;
-    --border:      rgba(124,58,237,.25);
-    --border-hover:rgba(124,58,237,.6);
-    --accent:      #7c3aed;
-    --accent-glow: rgba(124,58,237,.35);
-    --accent-light:#a78bfa;
-    --text:        #e8e6f0;
-    --text-muted:  #7b7a94;
-    --success:     #34d399;
-    --error:       #f87171;
-    --radius:      14px;
-    --transition:  .2s cubic-bezier(.4,0,.2,1);
+    --canvas: #181818;
+    --canvas-elevated: #303030;
+    --primary: #da291c;
+    --primary-active: #b01e0a;
+    --ink: #ffffff;
+    --body: #969696;
+    --muted: #666666;
+    --hairline: #303030;
+    --error: #f13a2c;
+    --spacing-xxs: 8px;
+    --spacing-xs: 16px;
+    --spacing-sm: 24px;
+    --spacing-md: 32px;
+    --spacing-lg: 48px;
+    --spacing-xl: 64px;
+    --spacing-xxl: 96px;
+    --spacing-super: 128px;
+    --rounded-none: 0px;
+    --rounded-sm: 4px;
+    --rounded-full: 9999px;
   }
-
-  html { scroll-behavior: smooth; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-weight: 400;
     min-height: 100vh;
-    padding: 40px 20px 80px;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Ambient background glow ─────────────────────────────── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(124,58,237,.12) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 30% at 85% 80%, rgba(124,58,237,.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── Layout ──────────────────────────────────────────────── */
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 820px;
-    margin: 0 auto;
-  }
-
-  /* ── Header ──────────────────────────────────────────────── */
-  header {
-    text-align: center;
-    margin-bottom: 52px;
-    animation: fadeDown .6s ease both;
-  }
-  .logo-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(124,58,237,.12);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 18px;
-    font-size: 12px;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--accent-light);
-    margin-bottom: 22px;
-  }
-  .logo-badge .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent-light);
-    animation: pulse 2s ease infinite;
-  }
-  h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 600;
-    letter-spacing: -.02em;
-    line-height: 1.15;
-    background: linear-gradient(135deg, #fff 30%, var(--accent-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .subtitle {
-    margin-top: 12px;
-    color: var(--text-muted);
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  /* ── Card ────────────────────────────────────────────────── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 20px;
-    transition: border-color var(--transition), box-shadow var(--transition);
-    animation: fadeUp .5s ease both;
-  }
-  .card:hover { border-color: var(--border-hover); }
-  .card:nth-child(2) { animation-delay: .05s; }
-  .card:nth-child(3) { animation-delay: .1s; }
-  .card:nth-child(4) { animation-delay: .15s; }
-
-  .card-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--accent-light);
-    margin-bottom: 14px;
+  /* ── Typography & Navigation ──────────────────────────────── */
+  .top-nav {
+    height: 64px;
+    border-bottom: 1px solid var(--hairline);
     display: flex;
     align-items: center;
-    gap: 8px;
+    padding: 0 var(--spacing-sm);
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.65px;
   }
-  .card-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
+  
+  .brand-mark {
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--primary);
+    margin-right: auto;
   }
 
-  /* ── Drop Zones ──────────────────────────────────────────── */
+  .wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-sm) var(--spacing-super);
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 500;
+    letter-spacing: -1.6px;
+    line-height: 1.05;
+    margin-bottom: var(--spacing-xs);
+    color: var(--ink);
+  }
+
+  p.subtitle {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--body);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  /* ── Workflow Steps ──────────────────────────────────────── */
+  .step-container {
+    border-top: 1px solid var(--hairline);
+    padding-top: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    transition: opacity 0.4s ease, filter 0.4s ease;
+  }
+  
+  .step-container.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(100%);
+  }
+
+  .step-container.hidden {
+    display: none;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .step-num {
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.1px;
+    color: var(--primary);
+  }
+
+  .step-title {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: 0.195px;
+    color: var(--ink);
+  }
+
+  /* ── Drop Zones & Uploads ────────────────────────────────── */
   .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 36px 20px;
+    border: 1px dashed var(--muted);
+    border-radius: var(--rounded-none);
+    padding: var(--spacing-xl) var(--spacing-sm);
     text-align: center;
     cursor: pointer;
-    transition: border-color var(--transition), background var(--transition);
+    transition: border-color 0.2s, background 0.2s;
     position: relative;
-    overflow: hidden;
+    background: var(--canvas-elevated);
   }
   .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent);
-    background: rgba(124,58,237,.06);
+    border-color: var(--ink);
+    background: #3a3a3a;
   }
   .drop-zone input[type="file"] {
     position: absolute;
@@ -159,482 +148,329 @@
     width: 100%;
     height: 100%;
   }
-  .drop-icon {
-    width: 44px;
-    height: 44px;
-    margin: 0 auto 12px;
-    background: rgba(124,58,237,.15);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .drop-icon svg { width: 22px; height: 22px; stroke: var(--accent-light); }
-  .drop-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
-  .drop-text strong { color: var(--text); font-weight: 500; }
-
-  /* Preview */
+  .drop-text { font-size: 14px; color: var(--body); font-weight: 400; }
+  .drop-text strong { color: var(--ink); font-weight: 500; display: block; margin-bottom: var(--spacing-xxs); text-transform: uppercase; letter-spacing: 1px;}
+  
   .preview-wrap {
-    margin-top: 16px;
-    border-radius: 10px;
-    overflow: hidden;
     position: relative;
     display: none;
   }
   .preview-wrap.visible { display: block; }
   .preview-wrap img {
     width: 100%;
-    max-height: 280px;
+    max-height: 500px;
     object-fit: cover;
     display: block;
-    border-radius: 10px;
+    border-radius: var(--rounded-none);
   }
   .preview-badge {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(12,12,23,.75);
-    backdrop-filter: blur(6px);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 10px;
+    top: var(--spacing-sm);
+    left: var(--spacing-sm);
+    background: rgba(24, 24, 24, 0.8);
+    backdrop-filter: blur(4px);
+    color: var(--ink);
+    padding: 6px 14px;
     font-size: 11px;
-    color: var(--accent-light);
-    letter-spacing: .05em;
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    border: 1px solid var(--hairline);
   }
-  .preview-remove {
+  .preview-action {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(248,113,113,.15);
-    border: 1px solid rgba(248,113,113,.4);
-    border-radius: 6px;
-    padding: 4px 10px;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: rgba(24, 24, 24, 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--hairline);
+    color: var(--ink);
+    padding: 6px 14px;
     font-size: 11px;
-    color: var(--error);
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
     cursor: pointer;
-    z-index: 2;
-    transition: background var(--transition);
+    transition: background 0.2s;
   }
-  .preview-remove:hover { background: rgba(248,113,113,.25); }
+  .preview-action:hover { background: var(--canvas); }
 
-  .drop-zone-small { padding: 20px; }
-  .drop-zone-small .drop-icon { width: 34px; height: 34px; }
-  .drop-zone-small .drop-icon svg { width: 17px; height: 17px; }
-  .preview-wrap-small img { max-height: 160px; }
-
-  /* ── Prompt ──────────────────────────────────────────────── */
+  /* ── Directives & Forms ──────────────────────────────────── */
   .prompt-input {
     width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 300;
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--rounded-none);
+    padding: 16px 20px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
     resize: vertical;
-    min-height: 90px;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    min-height: 120px;
     outline: none;
+    transition: border-color 0.2s;
   }
-  .prompt-input::placeholder { color: var(--text-muted); }
   .prompt-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    border-color: var(--body);
   }
-  .base-image-row {
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    color: var(--text-muted);
-    font-size: 13px;
-  }
-  .base-image-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    outline: none;
-  }
-  .base-image-select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
+
   .prompt-suggestions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
   }
   .suggestion-chip {
-    background: rgba(124,58,237,.1);
-    border: 1px solid rgba(124,58,237,.2);
-    border-radius: 100px;
-    padding: 5px 14px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--body);
+    padding: 10px 16px;
     font-size: 12px;
-    color: var(--accent-light);
+    font-weight: 600;
+    letter-spacing: 0.65px;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: background var(--transition), border-color var(--transition);
+    transition: border-color 0.2s, color 0.2s;
     user-select: none;
   }
   .suggestion-chip:hover {
-    background: rgba(124,58,237,.2);
-    border-color: var(--accent);
+    border-color: var(--ink);
+    color: var(--ink);
   }
 
-  /* ── Generate Button ─────────────────────────────────────── */
+  .optional-block-toggle {
+    margin-top: var(--spacing-md);
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--body);
+    transition: color 0.2s;
+  }
+  .optional-block-toggle:hover { color: var(--ink); }
+  .optional-block-toggle::before {
+    content: '+';
+    margin-right: 8px;
+    color: var(--primary);
+    font-size: 16px;
+  }
+  .optional-block-toggle.open::before { content: '−'; }
+  
+  .optional-block {
+    margin-top: var(--spacing-sm);
+    display: none;
+  }
+  .optional-block.visible { display: block; }
+
+  /* ── Buttons ─────────────────────────────────────────────── */
   .btn-generate {
     width: 100%;
-    padding: 17px;
-    background: linear-gradient(135deg, #6d28d9, #7c3aed);
+    background: var(--primary);
+    color: #ffffff;
     border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: .02em;
+    border-radius: var(--rounded-none);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
-    box-shadow: 0 4px 24px rgba(124,58,237,.3);
-    animation: fadeUp .5s .2s ease both;
+    height: 56px;
+    transition: background 0.2s;
+    margin-top: var(--spacing-xl);
   }
-  .btn-generate:hover:not(:disabled) {
-    opacity: .92;
-    transform: translateY(-1px);
-    box-shadow: 0 8px 30px rgba(124,58,237,.4);
-  }
-  .btn-generate:active:not(:disabled) { transform: translateY(0); }
-  .btn-generate:disabled { opacity: .55; cursor: not-allowed; transform: none; }
-  .btn-generate::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,.08), transparent);
-    pointer-events: none;
-  }
+  .btn-generate:hover:not(:disabled) { background: var(--primary-active); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* ── Loading ─────────────────────────────────────────────── */
+  .btn-outline {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 0 var(--spacing-md);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-outline:hover { background: var(--ink); color: var(--canvas); }
+
+  /* ── Loading, Error & Results ────────────────────────────── */
   .loading-state {
     display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 40px;
+    margin-top: var(--spacing-sm);
     text-align: center;
+    padding: var(--spacing-lg) 0;
   }
-  .loading-state.visible { display: flex; }
-  .spinner {
-    width: 48px; height: 48px;
-    border: 3px solid rgba(124,58,237,.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-  }
-  .loading-text { color: var(--text-muted); font-size: 14px; }
-  .loading-text strong { color: var(--accent-light); display: block; font-size: 16px; margin-bottom: 4px; }
+  .loading-state.visible { display: block; }
+  .loading-text { font-size: 18px; font-weight: 600; letter-spacing: 1.1px; color: var(--primary); margin-bottom: 8px;}
 
-  /* ── Error ───────────────────────────────────────────────── */
   .error-box {
     display: none;
-    background: rgba(248,113,113,.08);
-    border: 1px solid rgba(248,113,113,.3);
-    border-radius: 10px;
-    padding: 16px 20px;
+    background: rgba(241, 58, 44, 0.1);
+    border: 1px solid var(--error);
+    padding: var(--spacing-sm);
     color: var(--error);
     font-size: 14px;
-    margin-bottom: 20px;
-    animation: fadeUp .3s ease both;
+    margin-bottom: var(--spacing-md);
   }
-  .error-box.visible { display: flex; gap: 10px; align-items: flex-start; }
-  .error-icon { flex-shrink: 0; margin-top: 1px; }
+  .error-box.visible { display: block; }
 
-  /* ── Result ──────────────────────────────────────────────── */
-  .result-section {
-    display: none;
-    animation: fadeUp .5s ease both;
-  }
-  .result-section.visible { display: block; }
   .result-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
   }
-  @media (max-width: 540px) {
-    .result-grid { grid-template-columns: 1fr; }
+  @media (min-width: 768px) {
+    .result-grid { grid-template-columns: 1fr 1fr; }
   }
-  .result-pane {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .result-pane-header {
-    padding: 12px 16px;
-    font-size: 11px;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .result-pane-header .pill {
-    padding: 2px 8px;
-    border-radius: 100px;
-    font-size: 10px;
-  }
-  .pill-before { background: rgba(148,163,184,.1); border: 1px solid rgba(148,163,184,.2); color: #94a3b8; }
-  .pill-after  { background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.25); color: var(--accent-light); }
-  .result-pane img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-  }
-  .download-bar {
-    padding: 14px 16px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
-  }
-  .candidate-row {
-    padding: 10px 16px 0;
-    display: flex;
-    gap: 8px;
-  }
-  .candidate-btn {
-    background: rgba(124,58,237,.1);
-    border: 1px solid rgba(124,58,237,.2);
-    border-radius: 7px;
-    padding: 6px 10px;
-    color: var(--accent-light);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .candidate-btn.active {
-    background: rgba(124,58,237,.25);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  .btn-download {
-    background: rgba(124,58,237,.15);
-    border: 1px solid rgba(124,58,237,.3);
-    border-radius: 8px;
-    padding: 8px 18px;
-    color: var(--accent-light);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    text-decoration: none;
-  }
-  .btn-download:hover { background: rgba(124,58,237,.25); }
 
-  /* ── Animations ──────────────────────────────────────────── */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .pane-header {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    color: var(--body);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
   }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes spin  { to { transform: rotate(360deg); } }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: .4; }
+  .pane-header strong { color: var(--ink); margin-left: 8px; }
+
+  .result-image-wrap { background: var(--canvas-elevated); margin-bottom: var(--spacing-sm); }
+  .result-image-wrap img { width: 100%; display: block; object-fit: cover; aspect-ratio: 4/3; }
+
+  .action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--hairline);
   }
 </style>
 </head>
 <body>
-<div class="wrapper">
 
-  <!-- Header -->
+<div class="top-nav">
+  <div class="brand-mark">VISUALIZER</div>
+  <div>INTERIOR DESIGN EDITOR</div>
+</div>
+
+<div class="wrapper">
+  
   <header>
-    <div class="logo-badge"><span class="dot"></span>Powered by ME</div>
-    <h1>AI Room Visualizer</h1>
-    <p class="subtitle">Upload a room photo, describe your change,<br>and watch the space transform in seconds.</p>
+    <h1>Cinematic Room Editor</h1>
+    <p class="subtitle">Direct your photorealistic scene. Upload environment architecture, apply narrative direction, and render the iteration in seconds.</p>
   </header>
 
-  <!-- Upload: Room Image -->
-  <div class="card">
-    <div class="card-label">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      Room Photo
+  <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+
+  <!-- STEP 1: SCENE -->
+  <div class="step-container" id="step1">
+    <div class="step-header">
+      <span class="step-num">01 /</span>
+      <h2 class="step-title">SCENE DEFINITION</h2>
     </div>
+    
     <div class="drop-zone" id="roomZone">
       <input type="file" id="roomInput" accept="image/*" />
-      <div class="drop-icon">
-        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4M7 10l5-5 5 5M12 5v10"/></svg>
-      </div>
-      <div class="drop-text"><strong>Click to upload</strong> or drag & drop<br>JPG, PNG, WebP — max 4 MB</div>
+      <div class="drop-text"><strong>UPLOAD BASE ENVIRONMENT</strong> Drop blueprint or photography here (JPG/PNG)</div>
     </div>
+    
     <div class="preview-wrap" id="roomPreview">
-      <span class="preview-badge">Room</span>
-      <button class="preview-remove" id="roomRemove">✕ Remove</button>
-      <img id="roomPreviewImg" src="" alt="Room preview" />
+      <span class="preview-badge">ACTIVE SCENE</span>
+      <button class="preview-action" id="roomRemove">REPLACE ENVIRONMENT</button>
+      <img id="roomPreviewImg" src="" alt="Active Scene" />
     </div>
   </div>
 
-  <!-- Upload: Object Image (optional) -->
-  <div class="card">
-    <div class="card-label">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-      Replacement Object
-      <span style="font-size:10px;color:var(--text-muted);text-transform:none;letter-spacing:0;font-weight:300">optional</span>
+  <!-- STEP 2: DIRECTIVE -->
+  <div class="step-container disabled" id="step2">
+    <div class="step-header">
+      <span class="step-num">02 /</span>
+      <h2 class="step-title">EDITORIAL DIRECTIVE</h2>
     </div>
-    <div class="drop-zone drop-zone-small" id="objZone">
-      <input type="file" id="objInput" accept="image/*" />
-      <div class="drop-icon">
-        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-      </div>
-      <div class="drop-text" style="font-size:13px"><strong>Upload replacement object</strong><br>e.g. a sofa photo to place in the room</div>
-    </div>
-    <div class="preview-wrap preview-wrap-small" id="objPreview">
-      <span class="preview-badge">Object</span>
-      <button class="preview-remove" id="objRemove">✕ Remove</button>
-      <img id="objPreviewImg" src="" alt="Object preview" />
-    </div>
-  </div>
-
-  <!-- Prompt -->
-  <div class="card">
-    <div class="card-label">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19H4v-3L16.5 3.5z"/></svg>
-      Describe the Edit
-    </div>
-    <textarea
-      class="prompt-input"
-      id="promptInput"
-      placeholder="e.g. Remove the sofa from the room, or Replace the wooden chair with a modern white armchair"
-    ></textarea>
-    <div class="base-image-row">
-      <span>Apply this prompt to:</span>
-      <select id="baseImageSelect" class="base-image-select">
-        <option value="original">Original uploaded room image</option>
-        <option value="latest">Latest generated result (follow-up)</option>
-      </select>
-    </div>
+    
+    <textarea class="prompt-input" id="promptInput" placeholder="Describe the adjustment. e.g. 'Remove the sofa' or 'Replace existing flooring with white oak chevron...'"></textarea>
+    
     <div class="prompt-suggestions">
-      <span class="suggestion-chip" data-prompt="Remove the sofa from the room">Remove sofa</span>
-      <span class="suggestion-chip" data-prompt="Replace the rug with a modern geometric pattern rug">Replace rug</span>
-      <span class="suggestion-chip" data-prompt="Change the wall colour to warm sage green">Change wall colour</span>
-      <span class="suggestion-chip" data-prompt="Add a large potted plant in the corner of the room">Add plant</span>
-      <span class="suggestion-chip" data-prompt="Replace the curtains with floor-to-ceiling white linen drapes">Replace curtains</span>
-      <span class="suggestion-chip" data-prompt="Make the room look like a Scandinavian minimalist interior">Scandinavian style</span>
+      <span class="suggestion-chip" data-prompt="Remove the primary seating">REMOVE SEATING</span>
+      <span class="suggestion-chip" data-prompt="Change the wall colour to warm sage green">SCENE: SAGE WALLS</span>
+      <span class="suggestion-chip" data-prompt="Convert the aesthetic to a Scandinavian minimalist interior">AESTHETIC: SCANDINAVIAN</span>
+    </div>
+
+    <!-- Optional Reference Library -->
+    <div class="optional-block-toggle" id="refToggle">ATTACH REFERENCE MATERIAL (ADVANCED)</div>
+    <div class="optional-block" id="refPanel">
+      <div class="drop-zone" id="objZone" style="padding: var(--spacing-md);">
+        <input type="file" id="objInput" accept="image/*" />
+        <div class="drop-text"><strong>UPLOAD REPLACEMENT ASSET</strong> Upload a specific furniture piece</div>
+      </div>
+      <div class="preview-wrap" id="objPreview">
+        <span class="preview-badge">REFERENCE ASSET</span>
+        <button class="preview-action" id="objRemove">REMOVE</button>
+        <img id="objPreviewImg" src="" alt="Reference Object" />
+      </div>
+    </div>
+
+    <button class="btn-generate" id="generateBtn">EXECUTE RENDER</button>
+    <div class="loading-state" id="loadingState">
+      <div class="loading-text">RENDERING SCENE</div>
+      <div style="color: var(--body); font-size: 14px;">Applying generative constraints. Expected duration: 15-30s.</div>
     </div>
   </div>
 
-  <!-- Error -->
-  <div class="error-box" id="errorBox">
-    <svg class="error-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <span id="errorMsg">Something went wrong, please try again.</span>
-  </div>
-
-  <!-- Generate Button -->
-  <button class="btn-generate" id="generateBtn">
-    ✦ Generate AI Edit
-  </button>
-
-  <!-- Loading -->
-  <div class="loading-state" id="loadingState">
-    <div class="spinner"></div>
-    <div class="loading-text">
-      <strong>AI is editing your room…</strong>
-      This usually takes 15–30 seconds
+  <!-- STEP 3: RENDER -->
+  <div class="step-container hidden" id="step3">
+    <div class="step-header">
+      <span class="step-num" style="color: var(--ink);">03 /</span>
+      <h2 class="step-title">FINAL OUTPUT</h2>
     </div>
-  </div>
+    
+    <div class="result-grid">
+      <div>
+        <div class="pane-header">ARCHIVE <strong>BEFORE</strong></div>
+        <div class="result-image-wrap"><img id="beforeImg" src="" alt="Before" /></div>
+      </div>
+      <div>
+        <div class="pane-header" style="color: var(--primary);">GENERATED <strong>AFTER</strong></div>
+        <div class="result-image-wrap"><img id="afterImg" src="" alt="After" /></div>
+      </div>
+    </div>
 
-  <!-- Result -->
-  <div class="result-section" id="resultSection">
-    <div class="card" style="padding:24px 28px 8px">
-      <div class="card-label">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        Result
-      </div>
-      <div class="result-grid">
-        <!-- Before -->
-        <div class="result-pane">
-          <div class="result-pane-header">
-            <span class="pill pill-before">Before</span>
-            Original
-          </div>
-          <img id="beforeImg" src="" alt="Before" />
-        </div>
-        <!-- After -->
-        <div class="result-pane">
-          <div class="result-pane-header">
-            <span class="pill pill-after">After</span>
-            AI Generated (2 options)
-          </div>
-          <div class="candidate-row">
-            <button class="candidate-btn active" id="candidate1Btn" type="button">Option 1</button>
-            <button class="candidate-btn" id="candidate2Btn" type="button">Option 2</button>
-          </div>
-          <img id="afterImg" src="" alt="After" />
-          <div class="download-bar">
-            <a class="btn-download" id="downloadBtn" href="#" download="ai-room-result.png">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              Download
-            </a>
-          </div>
-        </div>
-      </div>
+    <div class="action-bar">
+      <a class="btn-outline" style="background: var(--primary); color: #fff; border-color: var(--primary);" id="downloadBtn" href="#" download="ferrari-style-render.png">
+        DOWNLOAD RENDER
+      </a>
+      <button class="btn-outline" id="refineBtn">
+        ITERATE ON THIS RESULT →
+      </button>
     </div>
   </div>
 
 </div>
 
 <script>
-/* ─── State ──────────────────────────────────────────────────────────────── */
-let roomFile   = null;
-let objFile    = null;
-let roomDataURL = null;
-let latestGeneratedDataURL = null;
-let currentCandidates = [];
-let selectedCandidateIndex = 0;
+const $ = id => document.getElementById(id);
 
-/* ─── Helpers ────────────────────────────────────────────────────────────── */
-const $  = id  => document.getElementById(id);
-const qs = sel => document.querySelector(sel);
+let currentBaseBlob = null; // Holds the current active environment (File or generated Blob)
+let currentBaseURL = null;  // Corresponding preview URL
+let objFile = null;
 
-function showError(msg) {
-  $('errorBox').classList.add('visible');
-  $('errorMsg').textContent = msg || 'Something went wrong, please try again.';
-}
-function hideError() {
-  $('errorBox').classList.remove('visible');
-}
-function setLoading(on) {
-  $('loadingState').classList.toggle('visible', on);
-  $('generateBtn').disabled = on;
-  $('generateBtn').textContent = on ? '⏳ Generating…' : '✦ Generate AI Edit';
-}
-
-function setCandidate(index) {
-  if (!currentCandidates[index]) return;
-  selectedCandidateIndex = index;
-  latestGeneratedDataURL = currentCandidates[index];
-  $('afterImg').src = currentCandidates[index];
-  $('downloadBtn').href = currentCandidates[index];
-  $('candidate1Btn').classList.toggle('active', index === 0);
-  $('candidate2Btn').classList.toggle('active', index === 1);
-}
-
+// Helpers
+function showError(msg) { $('errorBox').classList.add('visible'); $('errorMsg').textContent = msg; }
+function hideError() { $('errorBox').classList.remove('visible'); }
 function dataUrlToBlob(dataUrl) {
   const parts = dataUrl.split(",");
   const mime = parts[0].match(/:(.*?);/)[1];
@@ -645,58 +481,69 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([bytes], { type: mime });
 }
 
-/* ─── Upload zones ───────────────────────────────────────────────────────── */
-function initDropZone(zoneId, inputId, previewWrapId, previewImgId, removeId, onFile) {
-  const zone      = $(zoneId);
-  const input     = $(inputId);
-  const previewW  = $(previewWrapId);
-  const previewImg= $(previewImgId);
-  const removeBtn = $(removeId);
-
-  function handleFile(file) {
-    if (!file || !file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      previewImg.src = e.target.result;
-      previewW.classList.add('visible');
-      if (onFile) onFile(file, e.target.result);
-    };
-    reader.readAsDataURL(file);
+// Set Active Scene
+function setBaseEnvironment(fileOrBlob, previewUrl) {
+  currentBaseBlob = fileOrBlob;
+  currentBaseURL = previewUrl;
+  
+  if (currentBaseBlob) {
+    $('roomZone').style.display = 'none';
+    $('roomPreviewImg').src = currentBaseURL;
+    $('roomPreview').classList.add('visible');
+    $('step2').classList.remove('disabled');
+  } else {
+    $('roomZone').style.display = 'block';
+    $('roomPreviewImg').src = '';
+    $('roomPreview').classList.remove('visible');
+    $('step2').classList.add('disabled');
+    $('step3').classList.add('hidden');
   }
-
-  input.addEventListener('change', e => handleFile(e.target.files[0]));
-
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', ()  => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('dragover');
-    handleFile(e.dataTransfer.files[0]);
-  });
-
-  removeBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    previewW.classList.remove('visible');
-    previewImg.src = '';
-    input.value = '';
-    if (onFile) onFile(null, null);
-  });
 }
 
-initDropZone('roomZone','roomInput','roomPreview','roomPreviewImg','roomRemove', (f, url) => {
-  roomFile    = f;
-  roomDataURL = url;
-  latestGeneratedDataURL = null;
-  $('baseImageSelect').value = 'original';
-});
-initDropZone('objZone','objInput','objPreview','objPreviewImg','objRemove', (f) => {
-  objFile = f;
+// Scene Upload Logic
+function handleFileRead(file, callback) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => callback(file, e.target.result);
+  reader.readAsDataURL(file);
+}
+
+$('roomInput').addEventListener('change', e => handleFileRead(e.target.files[0], setBaseEnvironment));
+$('roomZone').addEventListener('dragover', e => { e.preventDefault(); $('roomZone').classList.add('dragover'); });
+$('roomZone').addEventListener('dragleave', () => $('roomZone').classList.remove('dragover'));
+$('roomZone').addEventListener('drop', e => {
+  e.preventDefault(); $('roomZone').classList.remove('dragover');
+  handleFileRead(e.dataTransfer.files[0], setBaseEnvironment);
 });
 
-$('candidate1Btn').addEventListener('click', () => setCandidate(0));
-$('candidate2Btn').addEventListener('click', () => setCandidate(1));
+$('roomRemove').addEventListener('click', () => {
+  $('roomInput').value = '';
+  setBaseEnvironment(null, null);
+});
 
-/* ─── Suggestion chips ───────────────────────────────────────────────────── */
+// Object Upload Logic
+$('objInput').addEventListener('change', e => {
+  handleFileRead(e.target.files[0], (file, url) => {
+    objFile = file;
+    $('objZone').style.display = 'none';
+    $('objPreviewImg').src = url;
+    $('objPreview').classList.add('visible');
+  });
+});
+$('objRemove').addEventListener('click', () => {
+  objFile = null;
+  $('objInput').value = '';
+  $('objZone').style.display = 'block';
+  $('objPreviewImg').src = '';
+  $('objPreview').classList.remove('visible');
+});
+
+// UI Toggles
+$('refToggle').addEventListener('click', () => {
+  $('refToggle').classList.toggle('open');
+  $('refPanel').classList.toggle('visible');
+});
+
 document.querySelectorAll('.suggestion-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     $('promptInput').value = chip.dataset.prompt;
@@ -704,55 +551,60 @@ document.querySelectorAll('.suggestion-chip').forEach(chip => {
   });
 });
 
-/* ─── Generate ───────────────────────────────────────────────────────────── */
+// Refine Button (Iterative Loop)
+$('refineBtn').addEventListener('click', () => {
+  const generatedUrl = $('afterImg').src;
+  const newBlob = dataUrlToBlob(generatedUrl);
+  setBaseEnvironment(newBlob, generatedUrl);
+  
+  $('promptInput').value = '';
+  $('step3').classList.add('hidden');
+  $('step2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// Execution
 $('generateBtn').addEventListener('click', async () => {
   hideError();
-  $('resultSection').classList.remove('visible');
+  
+  if (!currentBaseBlob) return showError('Missing Environment. Upload a scene first.');
+  if (!$('promptInput').value.trim()) return showError('Missing Directive. Describe the edit.');
 
-  if (!roomFile)                         return showError('Please upload a room photo first.');
-  if (!$('promptInput').value.trim())    return showError('Please describe the edit you want.');
-  const baseImage = $('baseImageSelect').value;
-  if (baseImage === 'latest' && !latestGeneratedDataURL) {
-    return showError('No generated image yet. Run one edit first, then use follow-up mode.');
-  }
-
+  // UI state
+  $('step3').classList.add('hidden');
+  $('generateBtn').style.display = 'none';
+  $('loadingState').classList.add('visible');
+  
   const formData = new FormData();
-  if (baseImage === 'latest') {
-    const followupBlob = dataUrlToBlob(latestGeneratedDataURL);
-    formData.append('room_image', new File([followupBlob], 'followup-base.png', { type: followupBlob.type }));
-  } else {
-    formData.append('room_image', roomFile);
-  }
-  formData.append('prompt',     $('promptInput').value.trim());
+  
+  // Attach current base as file
+  const baseExt = currentBaseBlob.type === 'image/jpeg' ? 'jpg' : 'png';
+  formData.append('room_image', new File([currentBaseBlob], `base-layer.${baseExt}`, { type: currentBaseBlob.type }));
+  formData.append('prompt', $('promptInput').value.trim());
   if (objFile) formData.append('object_image', objFile);
-
-  setLoading(true);
 
   try {
     const res = await fetch('/edit', { method: 'POST', body: formData });
     const json = await res.json();
-
-    if (!res.ok) {
-      throw new Error(json.detail || `Server error ${res.status}`);
-    }
+    if (!res.ok) throw new Error(json.detail || `System Error ${res.status}`);
 
     const b64List = (json.images_b64 && json.images_b64.length) ? json.images_b64 : [json.image_b64];
-    const candidates = b64List
-      .filter(Boolean)
-      .map(b64 => `data:image/${json.format};base64,${b64}`);
-    if (!candidates.length) throw new Error('No image returned from server.');
+    if (!b64List[0]) throw new Error('Void output from render engine.');
 
-    $('beforeImg').src = (baseImage === 'latest' && latestGeneratedDataURL) ? latestGeneratedDataURL : roomDataURL;
-    currentCandidates = candidates;
-    setCandidate(0);
-    $('candidate2Btn').style.display = candidates[1] ? 'inline-block' : 'none';
-    $('resultSection').classList.add('visible');
-    $('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const resultDataUrl = `data:image/${json.format};base64,${b64List[0]}`;
+    
+    // Set step 3 images
+    $('beforeImg').src = currentBaseURL;
+    $('afterImg').src = resultDataUrl;
+    $('downloadBtn').href = resultDataUrl;
+    
+    $('step3').classList.remove('hidden');
+    $('step3').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   } catch (err) {
-    showError(err.message || 'Something went wrong, please try again.');
+    showError(err.message || 'System error. Please retry.');
   } finally {
-    setLoading(false);
+    $('loadingState').classList.remove('visible');
+    $('generateBtn').style.display = 'flex';
   }
 });
 </script>

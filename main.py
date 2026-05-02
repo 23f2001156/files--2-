@@ -143,7 +143,7 @@ async def edit_room(
                     (obj_path_name.name,     object_png_bytes, "image/png"),
                 ],
                 prompt=final_prompt,
-                n=2,
+                n=1,
                 size="1024x1024",
             )
         else:
@@ -151,7 +151,7 @@ async def edit_room(
                 model="gpt-image-1.5",
                 image=room_file_tuple,
                 prompt=final_prompt,
-                n=2,
+                n=1,
                 size="1024x1024",
             )
 
