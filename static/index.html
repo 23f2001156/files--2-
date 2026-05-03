@@ -94,7 +94,144 @@
   .mini-preview-info { flex: 1; }
   .mini-preview-name { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 2px;}
   .mini-preview-action { font-size: 10px; color: var(--primary); cursor: pointer; font-weight: 600; text-transform: uppercase;}
+  .asset-hint { font-size: 11px; color: var(--body); margin-top: 10px; line-height: 1.5; }
 
+  .catalog-fold {
+    margin-top: 12px;
+    border: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.01);
+  }
+  .catalog-fold-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .catalog-fold-head:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .catalog-title-wrap {
+    min-width: 0;
+  }
+  .catalog-title {
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--body);
+    font-weight: 600;
+  }
+  .catalog-meta {
+    margin-top: 3px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .catalog-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .btn-inline {
+    background: var(--panel-elevated);
+    border: 1px solid var(--hairline);
+    color: var(--ink);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  .btn-inline:hover { border-color: var(--body); }
+  .btn-inline.add {
+    border-color: rgba(218, 41, 28, 0.45);
+    color: var(--primary);
+    background: rgba(218, 41, 28, 0.08);
+  }
+  .btn-inline.add:hover {
+    border-color: var(--primary);
+    background: rgba(218, 41, 28, 0.16);
+  }
+  .btn-inline.icon {
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--body);
+  }
+
+  .catalog-fold-body {
+    padding: 0 10px 10px;
+    max-height: 320px;
+    overflow: hidden;
+    transition: max-height 0.28s ease, opacity 0.2s ease, padding-top 0.2s ease;
+    opacity: 1;
+  }
+  .catalog-fold.collapsed .catalog-fold-body {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .catalog-fold.collapsed .btn-inline.icon {
+    transform: rotate(-90deg);
+  }
+
+  .catalog-strip {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    max-height: 246px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  .catalog-card {
+    border: 1px solid var(--hairline);
+    background: var(--canvas);
+    padding: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .catalog-card:hover {
+    border-color: var(--body);
+    transform: translateY(-1px);
+  }
+  .catalog-card.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px rgba(218, 41, 28, 0.35);
+  }
+  .catalog-card img {
+    width: 100%;
+    height: 72px;
+    object-fit: cover;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .catalog-card-name {
+    font-size: 10px;
+    color: var(--body);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .catalog-empty {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px dashed var(--hairline);
+    background: rgba(255,255,255,0.01);
+    padding: 14px 10px;
+    text-align: center;
+  }
+  
   /* Directive */
   .prompt-input {
     width: 100%; height: 120px; background: var(--canvas); border: 1px solid var(--hairline);
@@ -195,6 +332,10 @@
     .pane-img-wrap { min-height: 250px; height: auto; padding: 8px; }
     .result-view { height: auto; flex-direction: column; }
     .result-header { gap: 12px; flex-wrap: wrap; }
+    .catalog-strip {
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      max-height: 190px;
+    }
   }
 </style>
 </head>
@@ -234,17 +375,38 @@
       <!-- Step 2 -->
       <div class="step-container disabled" id="step2">
         <div class="step-header">
-          <span class="step-num">02 /</span><span class="step-label">Subject Asset</span>
+          <span class="step-num">02 /</span><span class="step-label">Subject Asset (Optional)</span>
         </div>
         <div class="drop-zone" id="objZone">
           <input type="file" id="objInput" accept="image/*" />
-          <div class="drop-text"><strong>UPLOAD OBJECT</strong> Drop reference furniture</div>
+          <div class="drop-text"><strong>UPLOAD OBJECT</strong> Direct upload for this edit</div>
         </div>
         <div class="mini-preview" id="objMini">
           <img id="objThumb" src="" />
           <div class="mini-preview-info">
             <div class="mini-preview-name">Asset Attached</div>
             <div class="mini-preview-action" id="objRemove">Replace Asset</div>
+          </div>
+        </div>
+        <div class="asset-hint">Or pick from catalog below. Last chosen asset source is used for generation.</div>
+
+        <div class="catalog-fold collapsed" id="catalogFold">
+          <div class="catalog-fold-head" id="catalogFoldToggle" aria-expanded="false" role="button" tabindex="0">
+            <div class="catalog-title-wrap">
+              <div class="catalog-title">Catalog Library</div>
+              <div class="catalog-meta" id="catalogMeta">0 items</div>
+            </div>
+            <div class="catalog-toolbar-actions">
+              <button class="btn-inline add" id="catalogAddBtn" type="button">+ Add</button>
+              <button class="btn-inline icon" id="catalogToggleBtn" type="button" aria-label="Toggle catalog">&#9662;</button>
+            </div>
+          </div>
+
+          <input type="file" id="catalogAddInput" accept="image/*" style="display:none;" />
+
+          <div class="catalog-fold-body" id="catalogFoldBody">
+            <div class="catalog-strip" id="catalogGrid"></div>
+            <div class="catalog-empty" id="catalogEmpty">No catalog items yet.</div>
           </div>
         </div>
       </div>
@@ -317,7 +479,10 @@
 <script>
 const $ = id => document.getElementById(id);
 let baseBlob = null, baseURL = null;
-let objBlob = null, objURL = null; // Store obj URL for picture-in-picture
+let objBlob = null, objURL = null;
+let assetMode = "none"; // none | upload | catalog
+let selectedCatalogId = null;
+let catalogItems = [];
 
 function showToast(msg) {
   $('errorToast').textContent = msg;
@@ -334,10 +499,119 @@ function dataUrlToBlob(url) {
   return new Blob([arr], { type: mime });
 }
 
+function catalogPreviewUrl(item) {
+  return `${item.url}?v=${item.updated_at || 0}`;
+}
+
+function setCatalogCollapsed(collapsed) {
+  const fold = $('catalogFold');
+  const toggle = $('catalogFoldToggle');
+  const expanded = !collapsed;
+  fold.classList.toggle('collapsed', collapsed);
+  toggle.setAttribute('aria-expanded', String(expanded));
+}
+
+function toggleCatalogFold() {
+  const fold = $('catalogFold');
+  setCatalogCollapsed(!fold.classList.contains('collapsed'));
+}
+
+function setStepState() {
+  if (baseBlob) {
+    $('step2').classList.remove('disabled');
+    $('step3').classList.remove('disabled');
+  } else {
+    $('step2').classList.add('disabled');
+    $('step3').classList.add('disabled');
+  }
+}
+
+function renderCatalog() {
+  const grid = $('catalogGrid');
+  grid.innerHTML = '';
+  const count = catalogItems.length;
+  const selectedPart = selectedCatalogId ? ' | selected' : '';
+  $('catalogMeta').textContent = (count === 1 ? '1 item' : `${count} items`) + selectedPart;
+
+  if (!catalogItems.length) {
+    $('catalogEmpty').style.display = 'block';
+    return;
+  }
+
+  $('catalogEmpty').style.display = 'none';
+
+  for (const item of catalogItems) {
+    const card = document.createElement('div');
+    card.className = `catalog-card${selectedCatalogId === item.id ? ' active' : ''}`;
+
+    const img = document.createElement('img');
+    img.src = catalogPreviewUrl(item);
+    img.alt = item.name || item.id;
+
+    const name = document.createElement('div');
+    name.className = 'catalog-card-name';
+    name.textContent = item.name || item.id;
+
+    card.appendChild(img);
+    card.appendChild(name);
+    card.addEventListener('click', () => {
+      if (selectedCatalogId === item.id) {
+        clearAsset();
+      } else {
+        setAssetFromCatalog(item);
+      }
+    });
+    grid.appendChild(card);
+  }
+}
+
+async function loadCatalog() {
+  try {
+    const res = await fetch('/catalog');
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.detail || `Error ${res.status}`);
+    catalogItems = Array.isArray(json.items) ? json.items : [];
+
+    if (selectedCatalogId && !catalogItems.some(item => item.id === selectedCatalogId)) {
+      selectedCatalogId = null;
+      if (assetMode === 'catalog') {
+        assetMode = 'none';
+        objURL = null;
+      }
+    }
+    renderCatalog();
+    updateCanvasState();
+  } catch (err) {
+    showToast(err.message || 'Failed to load catalog.');
+  }
+}
+
+async function uploadCatalogImage(file, opts = { autoSelect: true, quiet: false }) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res = await fetch('/catalog/upload', { method: 'POST', body: formData });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.detail || `Error ${res.status}`);
+
+    await loadCatalog();
+    if (opts.autoSelect && json.item && json.item.id) {
+      const selected = catalogItems.find(item => item.id === json.item.id);
+      if (selected) setAssetFromCatalog(selected);
+      setCatalogCollapsed(false);
+    }
+
+    if (!opts.quiet) showToast('Catalog image added.');
+  } catch (err) {
+    if (!opts.quiet) showToast(err.message || 'Catalog upload failed.');
+  }
+}
+
 function updateCanvasState() {
   if ($('resultView').classList.contains('visible')) return;
   
-  // Show base environment
   if (baseURL) {
     $('emptyState').style.display = 'none';
     $('canvasMainImg').src = baseURL;
@@ -347,7 +621,6 @@ function updateCanvasState() {
     $('viewport').classList.remove('visible');
   }
 
-  // Feature: Conditional Picture-in-Picture
   if (objURL && baseURL) {
     $('canvasAssetImg').src = objURL;
     $('floatingAsset').classList.add('visible');
@@ -356,36 +629,68 @@ function updateCanvasState() {
   }
 }
 
-// Environment Logic
 function setEnvironment(file, url) {
   baseBlob = file; baseURL = url;
   if(baseBlob) {
     $('roomZone').style.display = 'none';
     $('roomThumb').src = url;
     $('roomMini').classList.add('visible');
-    $('step2').classList.remove('disabled');
   } else {
     $('roomZone').style.display = 'block';
     $('roomMini').classList.remove('visible');
-    $('step2').classList.add('disabled');
-    $('step3').classList.add('disabled');
-    setAsset(null, null);
+    clearAsset();
+  }
+  setStepState();
+  updateCanvasState();
+}
+
+function clearUploadedAssetPreview() {
+  $('objInput').value = '';
+  $('objZone').style.display = 'block';
+  $('objMini').classList.remove('visible');
+}
+
+function setAssetFromUpload(file, url) {
+  objBlob = file;
+  objURL = url;
+
+  if (objBlob) {
+    assetMode = 'upload';
+    selectedCatalogId = null;
+    $('objZone').style.display = 'none';
+    $('objThumb').src = url;
+    $('objMini').classList.add('visible');
+    renderCatalog();
+    // Keep uploaded objects available for later reuse.
+    uploadCatalogImage(file, { autoSelect: false, quiet: true });
+  } else {
+    clearUploadedAssetPreview();
+    if (assetMode === 'upload') {
+      assetMode = 'none';
+      objURL = null;
+    }
   }
   updateCanvasState();
 }
 
-// Asset Logic
-function setAsset(file, url) {
-  objBlob = file; objURL = url;
-  if(objBlob) {
-    $('objZone').style.display = 'none';
-    $('objThumb').src = url;
-    $('objMini').classList.add('visible');
-    $('step3').classList.remove('disabled');
-  } else {
-    $('objZone').style.display = 'block';
-    $('objMini').classList.remove('visible');    $('step3').classList.add('disabled');
-  }
+function setAssetFromCatalog(item) {
+  if (!item) return;
+  assetMode = 'catalog';
+  selectedCatalogId = item.id;
+  objBlob = null;
+  objURL = catalogPreviewUrl(item);
+  clearUploadedAssetPreview();
+  renderCatalog();
+  updateCanvasState();
+}
+
+function clearAsset() {
+  assetMode = 'none';
+  selectedCatalogId = null;
+  objBlob = null;
+  objURL = null;
+  clearUploadedAssetPreview();
+  renderCatalog();
   updateCanvasState();
 }
 
@@ -400,14 +705,36 @@ function handleRead(file, cb) {
 $('roomInput').addEventListener('change', e => handleRead(e.target.files[0], setEnvironment));
 $('roomRemove').addEventListener('click', () => { $('roomInput').value=''; setEnvironment(null,null); $('resultView').classList.remove('visible'); });
 
-$('objInput').addEventListener('change', e => handleRead(e.target.files[0], setAsset));
-$('objRemove').addEventListener('click', () => { $('objInput').value=''; setAsset(null,null); });
+$('objInput').addEventListener('change', e => handleRead(e.target.files[0], setAssetFromUpload));
+$('objRemove').addEventListener('click', () => { setAssetFromUpload(null, null); });
+$('catalogFoldToggle').addEventListener('click', toggleCatalogFold);
+$('catalogFoldToggle').addEventListener('keydown', e => {
+  if (e.target !== e.currentTarget) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleCatalogFold();
+  }
+});
+$('catalogAddBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  $('catalogAddInput').click();
+});
+$('catalogToggleBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  toggleCatalogFold();
+});
+$('catalogAddInput').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  await uploadCatalogImage(file, { autoSelect: true, quiet: false });
+  $('catalogAddInput').value = '';
+});
 
 // Iterate
 $('refineBtn').addEventListener('click', () => {
   const url = $('afterImg').src;
   setEnvironment(dataUrlToBlob(url), url);
-  setAsset(null, null);
+  clearAsset();
   $('promptInput').value = '';
   $('resultView').classList.remove('visible');
   updateCanvasState();
@@ -416,7 +743,6 @@ $('refineBtn').addEventListener('click', () => {
 // Generate
 $('generateBtn').addEventListener('click', async () => {
   if (!baseBlob) return showToast('Missing Environment: Please assign a scene.');
-  if (!objBlob) return showToast('Missing Asset: Please assign a reference object.');
   if (!$('promptInput').value.trim()) return showToast('Missing Directive: Add an editorial prompt.');
 
   $('loader').classList.add('visible');
@@ -427,7 +753,11 @@ $('generateBtn').addEventListener('click', async () => {
   const formData = new FormData();
   const ext = baseBlob.type === 'image/jpeg' ? 'jpg' : 'png';
   formData.append('room_image', new File([baseBlob], `layer.${ext}`, { type: baseBlob.type }));
-  formData.append('object_image', objBlob);
+  if (assetMode === 'upload' && objBlob) {
+    formData.append('object_image', objBlob);
+  } else if (assetMode === 'catalog' && selectedCatalogId) {
+    formData.append('catalog_image', selectedCatalogId);
+  }
   formData.append('prompt', $('promptInput').value.trim());
 
   try {
@@ -444,6 +774,7 @@ $('generateBtn').addEventListener('click', async () => {
     $('downloadBtn').download = 'synthesis-output.png';
     
     $('resultView').classList.add('visible');
+    await loadCatalog();
   } catch(err) {
     showToast(err.message);
     updateCanvasState();
@@ -451,6 +782,9 @@ $('generateBtn').addEventListener('click', async () => {
     $('loader').classList.remove('visible');
   }
 });
+
+setStepState();
+loadCatalog();
 </script>
 </body>
 </html>

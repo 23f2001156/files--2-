@@ -1,6 +1,7 @@
 import os
 import base64
 import uuid
+import hashlib
 from pathlib import Path
 from io import BytesIO
 
@@ -31,11 +32,15 @@ app.add_middleware(
 
 UPLOADS_DIR = Path("uploads")
 OUTPUTS_DIR = Path("outputs")
+CATALOG_DIR = Path("catalog")
 UPLOADS_DIR.mkdir(exist_ok=True)
 OUTPUTS_DIR.mkdir(exist_ok=True)
+CATALOG_DIR.mkdir(exist_ok=True)
 
 MAX_SIZE_BYTES = 4 * 1024 * 1024   # 4 MB
 MAX_DIMENSION  = 1024               # px
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+ALLOWED_CATALOG_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 
 
 def prepare_image(file_bytes: bytes) -> bytes:
@@ -62,6 +67,59 @@ def prepare_image(file_bytes: bytes) -> bytes:
         data = buf.getvalue()
 
     return data
+
+
+def slugify_stem(value: str) -> str:
+    clean = "".join(ch.lower() if ch.isalnum() else "-" for ch in value).strip("-")
+    while "--" in clean:
+        clean = clean.replace("--", "-")
+    return clean[:40] or "asset"
+
+
+def save_to_catalog(image_png_bytes: bytes, source_filename: str | None) -> str:
+    image_hash = hashlib.sha256(image_png_bytes).hexdigest()[:12]
+    existing = next(CATALOG_DIR.glob(f"*_{image_hash}.png"), None)
+    if existing:
+        return existing.name
+
+    stem = slugify_stem(Path(source_filename or "asset").stem)
+    file_name = f"{stem}_{image_hash}.png"
+    (CATALOG_DIR / file_name).write_bytes(image_png_bytes)
+    return file_name
+
+
+def catalog_public_item(path: Path) -> dict:
+    stat = path.stat()
+    return {
+        "id": path.name,
+        "name": path.stem,
+        "url": f"/catalog-files/{path.name}",
+        "size": stat.st_size,
+        "updated_at": int(stat.st_mtime),
+    }
+
+
+def list_catalog_items() -> list[dict]:
+    files = [
+        p for p in CATALOG_DIR.iterdir()
+        if p.is_file() and p.suffix.lower() in ALLOWED_CATALOG_EXTENSIONS
+    ]
+    files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return [catalog_public_item(p) for p in files]
+
+
+def resolve_catalog_image(image_id: str) -> Path:
+    safe_name = Path(image_id or "").name
+    if not safe_name or safe_name != image_id:
+        raise HTTPException(status_code=400, detail="Invalid catalog image id.")
+
+    path = CATALOG_DIR / safe_name
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="Catalog image not found.")
+    if path.suffix.lower() not in ALLOWED_CATALOG_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Unsupported catalog image format.")
+
+    return path
 
 
 def build_edit_prompt(user_prompt: str, has_object_reference: bool) -> str:
@@ -96,18 +154,34 @@ async def health():
     return {"status": "ok"}
 
 
+@app.get("/catalog")
+async def get_catalog():
+    return {"items": list_catalog_items()}
+
+
+@app.post("/catalog/upload")
+async def upload_catalog_image(image: UploadFile = File(...)):
+    if image.content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Catalog image must be JPEG, PNG, WebP, or GIF.")
+
+    image_bytes = await image.read()
+    image_png = prepare_image(image_bytes)
+    file_name = save_to_catalog(image_png, image.filename)
+    return {"item": catalog_public_item(CATALOG_DIR / file_name)}
+
+
 @app.post("/edit")
 async def edit_room(
     room_image: UploadFile = File(...),
     prompt: str = Form(...),
     object_image: UploadFile = File(None),
+    catalog_image: str = Form(None),
 ):
     # ── Validate inputs ──────────────────────────────────────────────────────
     if not prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
 
-    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
-    if room_image.content_type not in allowed_types:
+    if room_image.content_type not in ALLOWED_MIME_TYPES:
         raise HTTPException(status_code=400, detail="Room image must be JPEG, PNG, WebP, or GIF.")
 
     # ── Read & prepare room image ─────────────────────────────────────────────
@@ -120,15 +194,23 @@ async def edit_room(
     room_path.write_bytes(room_png)
 
     # ── Build prompt ──────────────────────────────────────────────────────────
-    final_prompt = build_edit_prompt(prompt, bool(object_image and object_image.filename))
 
     # ── Optional object image ─────────────────────────────────────────────────
     object_png_bytes = None
     if object_image and object_image.filename:
-        obj_bytes        = await object_image.read()
+        if object_image.content_type not in ALLOWED_MIME_TYPES:
+            raise HTTPException(status_code=400, detail="Object image must be JPEG, PNG, WebP, or GIF.")
+
+        obj_bytes = await object_image.read()
         object_png_bytes = prepare_image(obj_bytes)
-        obj_path         = UPLOADS_DIR / f"{room_id}_object.png"
+        obj_path = UPLOADS_DIR / f"{room_id}_object.png"
         obj_path.write_bytes(object_png_bytes)
+        save_to_catalog(object_png_bytes, object_image.filename)
+    elif catalog_image:
+        catalog_path = resolve_catalog_image(catalog_image)
+        object_png_bytes = prepare_image(catalog_path.read_bytes())
+
+    final_prompt = build_edit_prompt(prompt, bool(object_png_bytes))
     # ── Call OpenAI images.edit ───────────────────────────────────────────────
     try:
         room_file_tuple = (room_path.name, room_png, "image/png")
@@ -193,4 +275,5 @@ async def edit_room(
 
 # Serve static files (frontend)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/catalog-files", StaticFiles(directory="catalog"), name="catalog-files")
 app.mount("/", StaticFiles(directory="static", html=True), name="root")
