@@ -65,29 +65,29 @@ def prepare_image(file_bytes: bytes) -> bytes:
 
 
 def build_edit_prompt(user_prompt: str, has_object_reference: bool) -> str:
-    """Build a structured prompt for reliable interior edits."""
+    """Build a structured prompt for reliable interior edits using industry-grade constraints."""
     reference_instruction = (
-        "Use the second uploaded image as the replacement object reference. "
-        "Match its shape, material, and style closely while fitting realistic room perspective and lighting."
+        "CRITICAL: Use the second uploaded image as the exact replacement subject asset. "
+        "Match its shape perfectly. Place the new object EXACTLY in the same spatial location and footprint as the original furniture piece it is replacing. "
+        "Do NOT shift its position, rotate it inappropriately, or place it elsewhere in the room. "
+        "Ground it with realistic contact shadows that follow the room's primary light direction. "
+        "Extract and apply its exact materiality and textures."
         if has_object_reference
-        else "Do not introduce unrelated new furniture or decor unless explicitly requested."
+        else "Do not introduce unrelated new furniture, decor, or humans unless explicitly requested."
     )
 
     return (
-        "You are an expert interior photo editor. Edit the room photo according to the user's request.\n\n"
-        "Preserve constraints (always):\n"
-        "- Keep layout fixed.\n"
-        "- No extra objects unless explicitly requested.\n"
-        "- Keep photoreal shadows consistent with scene lighting.\n"
-        "- Preserve original camera/lens perspective and composition.\n\n"
-        "Requirements:\n"
-        "- Preserve room geometry, camera angle, and perspective.\n"
-        "- Keep lighting, shadows, reflections, and color grading photorealistic and consistent.\n"
-        "- Keep untouched areas unchanged.\n"
-        "- Maintain high-detail textures and clean edges.\n"
+        "You are an expert architectural visualization AI and senior interior designer. "
+        "Your task is to execute the user's request with strict adherence to photorealism.\n\n"
+        "CORE CONSTRAINTS:\n"
+        "- POSITION & PLACEMENT: It is ABSOLUTELY VITAL that the new furniture exactly replaces the old furniture's position. The new item MUST strictly occupy the same bounding box and footprint as the previous item. Do not shift it to a different wall or area.\n"
+        "- ANCHOR & PRESERVE: Do NOT alter the room's overarching geometry, perspective vanishing points, or original camera angle. The rest of the room must remain identical.\n"
+        "- LIGHTING SYNTHESIS: Ensure new objects cast physically accurate shadows, receive correct key light, and respect ambient occlusion.\n"
+        "- MATERIALITY: Render with tactile, high-fidelity materiality (micro-imperfections, realistic reflections).\n"
         f"- {reference_instruction}\n"
-        "- Output a single realistic edited image with no text, watermark, or borders.\n\n"
-        f"User request: {user_prompt.strip()}"
+        "- SCALE & DEPTH: Ensure spatial depth, Z-index overlapping, and ergonomic scale are perfectly maintained.\n"
+        "- CLEANLINESS: Output a single realistic edited image with NO text, NO watermarks, and NO borders.\n\n"
+        f"USER DIRECTIVE: {user_prompt.strip()}"
     )
 
 
@@ -143,7 +143,7 @@ async def edit_room(
                     (obj_path_name.name,     object_png_bytes, "image/png"),
                 ],
                 prompt=final_prompt,
-                n=2,
+                n=1,
                 size="1024x1024",
             )
         else:
@@ -151,7 +151,7 @@ async def edit_room(
                 model="gpt-image-1.5",
                 image=room_file_tuple,
                 prompt=final_prompt,
-                n=2,
+                n=1,
                 size="1024x1024",
             )
 
